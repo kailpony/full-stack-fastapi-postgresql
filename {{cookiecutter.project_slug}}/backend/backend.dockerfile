@@ -1,7 +1,7 @@
 FROM ghcr.io/br3ndonland/inboard:fastapi-0.37.0-python3.9
 
 # Copy poetry.lock* in case it doesn't exist in the repo
-COPY ./app/pyproject.toml ./app/poetry.lock* /app/
+COPY ./app/pyproject.toml ./app/requirement.lock* ./app/requirement-dev.lock* /app/
 
 WORKDIR /app/
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y libgeos-dev
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-interaction --no-root ; else poetry install --no-interaction --no-root --no-dev ; fi"
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then  rye sync --no-interaction --no-root ; else  rye sync --no-interaction --no-root --no-dev ; fi"
 RUN pip install --upgrade setuptools
 
 # /start Project-specific dependencies

@@ -2,21 +2,19 @@ FROM python:3.9
 
 WORKDIR /app/
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false
+# Install Rye
+RUN curl -sSf https://rye-up.com/get | bash -y \
+    echo 'source "$HOME/.rye/env"' >> ~/.bashrc \
 
-# Copy poetry.lock* in case it doesn't exist in the repo
-COPY ./app/pyproject.toml ./app/poetry.lock* /app/
+# Copy requirement.lock* in case it doesn't exist in the repo
+COPY ./app/pyproject.toml ./app/requirement.lock*  ./app/requirement-dev.lock* /app/
 
 # Neomodel has shapely and libgeos as dependencies
 RUN apt-get update && apt-get install -y libgeos-dev
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then rye sync --no-root ; else rye sync --no-root --no-dev ; fi"
 
 # /start Project-specific dependencies
 # RUN apt-get update && apt-get install -y --no-install-recommends \
